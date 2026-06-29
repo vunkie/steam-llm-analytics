@@ -71,13 +71,13 @@ def fill_database(data):
         game_data = Games(
             appid = game["appid"],
             name = game["name"],
-            img_icon_url = game["img_icon_url"],
-            playtime_forever = game["playtime_forever"],
-            playtime_windows_forever = game["playtime_windows_forever"],
-            playtime_linux_forever = game["playtime_linux_forever"],
-            playtime_deck_forever = game["playtime_deck_forever"],
-            playtime_disconnected = game["playtime_disconnected"],
-            rtime_last_played = datetime.fromtimestamp(game["rtime_last_played"], tz=timezone.utc)
+            img_icon_url = game.get("img_icon_url", ""),
+            playtime_forever = game.get("playtime_forever", 0),
+            playtime_windows_forever = game.get("playtime_windows_forever", 0),
+            playtime_linux_forever = game.get("playtime_linux_forever", 0),
+            playtime_deck_forever = game.get("playtime_deck_forever", 0),
+            playtime_disconnected = game.get("playtime_disconnected", 0),
+            rtime_last_played = datetime.fromtimestamp(game.get("rtime_last_played", 0), tz=timezone.utc)
         )
 
         session.add(game_data)

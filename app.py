@@ -44,6 +44,9 @@ if "loaded"in st.session_state:
     st.success("Successful! You can now ask questions about your Steam library.")
     
 if "session" in st.session_state:
+    if st.button("Change account"):
+        st.session_state.clear()
+        st.rerun()
     for message in st.session_state["messages"]:
         st.chat_message(message["role"]).write(message["content"])
 
