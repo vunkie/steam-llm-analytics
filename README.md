@@ -84,6 +84,10 @@ streamlit run app.py
   - *"Quantas horas joguei no Steam Deck?"*
   - *"Quais jogos joguei mais de 100 horas?"*
 
+## Preview
+
+![Steam Library Analytics](screenshot.png)
+
 ## Notes
 
 - The local LLM runs entirely on your machine — no API calls for SQL generation
