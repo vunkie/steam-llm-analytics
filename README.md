@@ -86,7 +86,7 @@ streamlit run app.py
 
 ## Preview
 
-![Steam Library Analytics](screenshot.png)
+![Steam Library Analytics](Screenshot.png)
 
 ## Notes
 
