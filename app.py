@@ -4,6 +4,8 @@ from main import resolve_vanity_url, fetch_steam_data, fill_database, run_prompt
 @st.cache_resource
 def load_data(steam_id):
     data = fetch_steam_data(steam_id)
+    if data is None:
+        return None
     session = fill_database(data)
     return session
 
@@ -19,13 +21,19 @@ if "session" not in st.session_state:
             if vanity.isdigit() and len(vanity) == 17:
                 steam_id = vanity
             else:
-                steam_id = resolve_vanity_url(vanity)
+                success,result = resolve_vanity_url(vanity)
+                if not success:
+                    st.error(result)
+                    st.stop()
+                else:
+                    steam_id = result
                 
-            if steam_id is None:
-                st.error("Invalid Steam ID")
-            else:
-                with st.spinner("Loading..."):
-                    st.session_state["session"] = load_data(steam_id)
+            with st.spinner("Loading..."):
+                session = load_data(steam_id)
+                if session is None:
+                    st.error("Steam library not found. Profile may be private or have no games.")
+                else:
+                    st.session_state["session"] = session
                     st.session_state["loaded"] = True
                     st.rerun()
 

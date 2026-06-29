@@ -22,13 +22,17 @@ def resolve_vanity_url(vanity):
     }
     
     #REQUEST
-    response = requests.get("https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/", params=params)
+    try:
+        response = requests.get("https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/", params=params, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.RequestException:
+        return (False, "Connection error.")
     data = response.json()
     
     if data["response"]["success"] != 1:
-        return None
+        return (False, "Steam Profile not found.")
     else:
-        return data["response"]["steamid"]
+        return (True, data["response"]["steamid"])
 
 def fetch_steam_data(steam_id):
     """Fetches data from Steam API"""
@@ -42,8 +46,14 @@ def fetch_steam_data(steam_id):
     }
 
     #REQUEST
-    response = requests.get(URL, params=params)
+    try:
+        response = requests.get(URL, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.RequestException:
+        return None
     data = response.json()
+    if data["response"].get("game_count", 0) == 0:
+        return None
 
     return data
 
@@ -78,24 +88,24 @@ def fill_database(data):
 
 def run_prompt(session, prompt):
     """Runs the prompt and returns the answer"""
-    #GENERATE QUERY
-    query = gerar_query(prompt)
+    try:
+        #GENERATE QUERY
+        query = gerar_query(prompt)
+        if not query.strip():
+            return "I couldn't generate a valid query. Please try again or try a different prompt."
 
-    #EXECUTE QUERY
-    result = session.execute(text(query))
-    lines = result.fetchall()
+        #EXECUTE QUERY
+        result = session.execute(text(query))
+        lines = result.fetchall()
 
-    #FORMAT ANSWER
-    answer = formatar_resposta(prompt, lines)
+        #FORMAT ANSWER
+        answer = formatar_resposta(prompt, lines)
 
-    return answer
+        return answer
 
-
-# data = fetch_steam_data()
-# session = fill_database(data)
-# while True:
-#     prompt = input("Digite aqui seu prompt. (Digite sair para sair)\n")
-#     if prompt.lower() == "sair":
-#         break
-#     answer = run_prompt(session, prompt)
-#     print(answer)
+    except Exception as e:
+        session.rollback()
+        error_str = str(e)
+        if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+            return "Gemini API rate limit exceeded. Please try again later."
+        return "An error occurred. Please try again or try a different prompt."
